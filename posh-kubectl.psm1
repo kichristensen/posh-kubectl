@@ -64,6 +64,7 @@ $Completion_Kubectl = {
     {
         $global:KubectlCompletion["commands"] = @{}
         $global:KubectlCompletion["options"] = @()
+        $global:KubectlCompletion["resources"] = @()
         
         kubectl --help | ForEach-Object {
             Write-Output $_
@@ -90,6 +91,7 @@ $Completion_Kubectl = {
             }
         }
 
+        GetResources
     }
     
     if ($wordToComplete -eq $null)
@@ -134,6 +136,9 @@ $Completion_Kubectl = {
         "CommandOther" {
             switch ($command)
             {
+                { @("get", "delete", "describe") -contains $_ } {
+                    $global:KubectlCompletion["resources"] | MatchingCommand -Command $commandName | Sort-Object | Get-AutoCompleteResult
+                }
                 "start" { FilterContainers $commandName "status=created", "status=exited" }
                 "stop" { FilterContainers $commandName "status=running" }
                 { @("run", "rmi", "history", "push", "save", "tag") -contains $_ } { CompleteImages $commandName }
@@ -150,3 +155,11 @@ if (-not $global:options) { $global:options = @{CustomArgumentCompleters = @{};N
 $global:options['NativeArgumentCompleters']['kubectl'] = $Completion_Kubectl
 
 $function:tabexpansion2 = $function:tabexpansion2 -replace 'End\r\n{','End { if ($null -ne $options) { $options += $global:options} else {$options = $global:options}'
+
+function script:GetResources() {
+    kubectl get --help | ForEach-Object {
+        if ($_ -match "^  \* (\w+)") {
+            $global:KubectlCompletion["resources"] += $Matches[1]
+        }
+    }
+}
