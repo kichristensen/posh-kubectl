@@ -75,7 +75,6 @@ $Completion_Kubectl = {
                 $currentCommand["options"] = @()
             }
         }
-        Write-Host "Here"
 
         kubectl options | ForEach-Object {
             Write-Output $_
@@ -116,25 +115,15 @@ $Completion_Kubectl = {
             if ($options.Count -eq 0)
             {
                 kubectl $command --help | ForEach-Object {
-                # if ($_ -match $flagRegex)
-                #     {
-                #         $options += $Matches[1]
-                #         if ($Matches[2] -ne $null)
-                #         {
-                #             $options += $Matches[2]
-                #         }
-                #     }
-                # }
-
                     if ($_ -match "^  (-[^, =]+),? ?(--[^= ]+)?")
                     {
-                        options += $Matches[1]
+                        $options += $Matches[1]
                         if ($Matches[2] -ne $null)
                         {
-                            options += $Matches[2]
+                            $options += $Matches[2]
                         }
                     } elseif ($_ -match "^\s{4,6}(--[^= ]+)?") {
-                        options += $Matches[1]
+                        $options += $Matches[1]
                     }
                 }
             }
@@ -143,7 +132,6 @@ $Completion_Kubectl = {
             $options | MatchingCommand -Command $commandName | Sort-Object | Get-AutoCompleteResult
         }
         "CommandOther" {
-            $filter = $null
             switch ($command)
             {
                 "start" { FilterContainers $commandName "status=created", "status=exited" }
